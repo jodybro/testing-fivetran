@@ -41,10 +41,14 @@ def generate_create_table_sql(data: Dict[str, Any]) -> str:
         column_type = json_to_sqlite_type(v)
         columns.append(f"{k} {column_type}")
     columns_sql = ", \n".join(columns)
-    return f"CREATE TABLE data ({columns_sql})"
+    return f"CREATE TABLE users ({columns_sql})"
 
 
-def insert_data(data: Dict[str, Any], table_name: str, db_file: str = DEFAULT_DB_FILE):
+def insert_data(
+    data: Dict[str, Any],
+    table_name: str = "fivetran",
+    db_file: str = DEFAULT_DB_FILE,
+) -> bool:
     ensure_db_exists()
     conn = connect_db(db_file)
     c = conn.cursor()

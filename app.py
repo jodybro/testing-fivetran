@@ -32,3 +32,10 @@ json_str = """
 
 json_data = json.loads(json_str)
 table_name = "users"
+
+client = db.connect_db()
+c = client.cursor()
+c.execute("SELECT * FROM users")
+client.commit()
+print(c.fetchall())
+client.close()
