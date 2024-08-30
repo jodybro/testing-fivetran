@@ -3,39 +3,41 @@
 import json
 import os
 
+from typing import Dict, Any
 from src.testing_fivetran import args
-from src.testing_fivetran import parse_http
 from src.testing_fivetran import db
 
 
 cli_args = args.cli_args()
-http_response = parse_http.parse_http().json()
-
-# Example usage
-json_str = """
-{
-
-    "id": 1,
-    "name": "John Doe",
-    "age": 30,
-    "is_active": true,
-    "height": 1.75,
-    "address": {
-        "street": "123 Main St",
-        "city": "Anytown"
-
-    },
-    "hobbies": ["reading", "swimming"]
-}
-"""
+DEFAULT_DB_FILE = os.getcwd() + "/out.db"
 
 
-json_data = json.loads(json_str)
-table_name = "users"
+# TODO: Use proper data structure from http response
+def insert_data(
+    data: Dict[str, Any],
+    table_name: str = "fivetran",
+    db_file: str = DEFAULT_DB_FILE,
+) -> bool:
+    # TODO: Use a fucking context manager amar
+    conn = db.connect_db(DEFAULT_DB_FILE)
+    c = conn.cursor()
+    c.execute(db.generate_create_table_sql(data))
+    conn.commit()
+    conn.close()
+    conn = db.connect_db(db_file)
+    c = conn.cursor()
+    c.execute(f"INSERT INTO {table_name} VALUES (?)", (json.dumps(data),))
+    conn.commit()
+    conn.close()
+    return True
 
-client = db.connect_db()
-c = client.cursor()
-c.execute("SELECT * FROM users")
-client.commit()
-print(c.fetchall())
-client.close()
+
+if __name__ == "__main__":
+    # TODO: Motherfucking context manager again amar
+    conn = db.connect_db(DEFAULT_DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users;")
+    result = cursor.fetchall()
+    for row in result:
+        print(row)
+    conn.close()
