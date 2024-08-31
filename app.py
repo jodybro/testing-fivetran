@@ -6,16 +6,18 @@ import os
 from typing import Dict, Any
 from src.testing_fivetran import args
 from src.testing_fivetran import db
+from src.testing_fivetran import parse_http
 
 
 cli_args = args.cli_args()
+respohse = parse_http.parse_http(cli_args.endpoint)
 DEFAULT_DB_FILE = os.getcwd() + "/out.db"
 
 
 # TODO: Use proper data structure from http response
 def insert_data(
     data: Dict[str, Any],
-    table_name: str = "fivetran",
+    table_name: str = "data",
     db_file: str = DEFAULT_DB_FILE,
 ) -> bool:
     # TODO: Use a fucking context manager amar
@@ -32,12 +34,11 @@ def insert_data(
     return True
 
 
-if __name__ == "__main__":
-    # TODO: Motherfucking context manager again amar
-    conn = db.connect_db(DEFAULT_DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users;")
-    result = cursor.fetchall()
-    for row in result:
-        print(row)
-    conn.close()
+# TODO: Motherfucking context manager again amar
+conn = db.connect_db(DEFAULT_DB_FILE)
+cursor = conn.cursor()
+cursor.execute("SELECT * FROM data;")
+result = cursor.fetchall()
+for row in result:
+    print(row)
+conn.close()

@@ -6,7 +6,14 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "requests>=2.32.3",
+    "testcontainers>=4.8.0",
+    "sqlalchemy>=2.0.32",
 ]
 [tool.uv]
-build = false
+
+no-binary-package = true
+binary = true
+system = false
+source = false
+editable = true
 

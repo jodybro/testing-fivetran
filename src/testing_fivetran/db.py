@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 
-import os
-import sqlite3
-from typing import Dict, Any
+from os import getcwd
+from typing import Any, Dict, Union
+
+from sqlalchemy import create_engine
+from sqlalchemy.dialects.sqlite.pysqlite import Engine as SQLiteEngine
+
+DEFAULT_DB_FILE = getcwd() + "/out.db"
 
 
-def ensure_db_exists(db_file):
-    print(db_file)
-    if not os.path.exists(db_file):
-        with open(db_file, "w") as f:
-            f.write("")
-    else:
-        pass
+def ensure_db_exists(db_file) -> Union[SQLiteEngine, Exception]:
+    try:
+        engine = create_engine(f"sqlite:///{db_file}")
+        return engine
+    except:
+        raise Exception("Cannot connect to db")
 
 
-def connect_db(db_file: str):
-    return sqlite3.connect(db_file)
+def connect_db(db_file: str = DEFAULT_DB_FILE):
+    return
 
 
 def json_to_sqlite_type(value: Any) -> str:
@@ -29,6 +32,25 @@ def json_to_sqlite_type(value: Any) -> str:
         return "TEXT"  # We'll store complex types as JSON text
     else:
         return "TEXT"
+
+
+def insert_data(
+    data: Dict[str, Any],
+    table_name: str = "data",
+    db_file: str = DEFAULT_DB_FILE,
+) -> bool:
+    # TODO: Use a fucking context manager amar
+    conn = db.connect_db(DEFAULT_DB_FILE)
+    c = conn.cursor()
+    c.execute(db.generate_create_table_sql(data))
+    conn.commit()
+    conn.close()
+    conn = db.connect_db(db_file)
+    c = conn.cursor()
+    c.execute(f"INSERT INTO {table_name} VALUES (?)", (json.dumps(data),))
+    conn.commit()
+    conn.close()
+    return True
 
 
 def generate_create_table_sql(data: Dict[str, Any]) -> str:
